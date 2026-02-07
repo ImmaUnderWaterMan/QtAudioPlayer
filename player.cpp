@@ -16,11 +16,49 @@ AudioPlayer::AudioPlayer(QObject *parent)
 
     // Подключение для обработки ошибок
     connect(m_player, &QMediaPlayer::errorOccurred, this, &AudioPlayer::handleErrorOccurred);
+
+    connect(m_player, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus status){
+        if (status == QMediaPlayer::LoadedMedia){
+            setTrackPic();
+        }
+    });
 }
 
 AudioPlayer::~AudioPlayer()
 {
     stop();
+}
+
+void AudioPlayer::setTrackPic()
+{
+    // Получаем метаданные
+    QMediaMetaData metaData = m_player->metaData();
+
+    // Получаем обложку
+    QVariant picture = metaData.value(QMediaMetaData::CoverArtImage);
+    if (!picture.isNull()) {
+        QImage coverImage = picture.value<QImage>();
+        if (!coverImage.isNull()) {
+            m_trackCover = QPixmap::fromImage(coverImage);
+            emit trackCoverChanged(m_trackCover);
+            qDebug() << "Обложка загружена, размер:" << m_trackCover.size();
+        }
+    } else {
+        // Проверяем другие возможные ключи для обложки
+        QVariant thumbnail = metaData.value(QMediaMetaData::ThumbnailImage);
+        if (!thumbnail.isNull()) {
+            QImage thumbImage = thumbnail.value<QImage>();
+            if (!thumbImage.isNull()) {
+                m_trackCover = QPixmap::fromImage(thumbImage);
+                emit trackCoverChanged(m_trackCover);
+                qDebug() << "Миниатюра загружена, размер:" << m_trackCover.size();
+            }
+        } else {
+            // Если обложки нет, очищаем
+            m_trackCover = QPixmap();
+            emit trackCoverChanged(m_trackCover);
+        }
+    }
 }
 
 void AudioPlayer::play()

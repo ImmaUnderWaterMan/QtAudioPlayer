@@ -155,7 +155,7 @@
         <enum>Qt::LayoutDirection::RightToLeft</enum>
        </property>
        <property name="frameShape">
-        <enum>QFrame::Shape::Box</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="text">
         <string>название трека</string>

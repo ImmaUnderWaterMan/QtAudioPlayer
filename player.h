@@ -3,9 +3,11 @@
 
 #include <QObject>
 #include <QMediaPlayer>
+#include <QMediaMetaData>
 #include <QAudioOutput>
 #include <QUrl>
 #include <QTime>
+#include <QPixmap>
 
 class AudioPlayer : public QObject
 {
@@ -23,7 +25,7 @@ public:
     void setPosition(qint64 position);
     void setSource(const QUrl &url);
     void setPlaybackRate(qreal rate);
-
+    void setTrackPic();
 
     bool isPlaying() const;
     int volume() const;
@@ -44,6 +46,7 @@ signals:
     void volumeChanged(int volume);
     void errorOccurred(const QString &errorString);
     void sourceChanged(const QUrl &url);
+    void trackCoverChanged(const QPixmap &cover);
 
 private slots:
     void handleErrorOccurred();
@@ -52,6 +55,7 @@ private:
     QMediaPlayer *m_player;
     QAudioOutput *m_audioOutput;
     QUrl m_currentSource;
+    QPixmap m_trackCover;
 };
 
 #endif // PLAYER_H

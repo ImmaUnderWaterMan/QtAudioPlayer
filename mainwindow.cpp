@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include <QTime>
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -77,6 +78,9 @@ void MainWindow::setupConnections()
     connect(ui->horizontalSlider, &QSlider::sliderPressed, this, &MainWindow::onPositionSliderPressed);
     connect(ui->horizontalSlider, &QSlider::sliderReleased, this, &MainWindow::onPositionSliderReleased);
     connect(ui->horizontalSlider, &QSlider::sliderMoved, this, &MainWindow::onPositionSliderMoved);
+
+    //обложка трека
+    connect(audioPlayer, &AudioPlayer::trackCoverChanged, this, &MainWindow::updateTrackCover);
 }
 
 void MainWindow::onListViewDoubleClicked(const QModelIndex &index)
@@ -116,8 +120,9 @@ void MainWindow::onPlayPauseClicked()
 {
     if (audioPlayer->isPlaying()) {
         audioPlayer->pause();
-    }
+    }else{
     audioPlayer->play();
+    }
 }
 
 void MainWindow::onVolumeChanged(int value)
@@ -177,7 +182,7 @@ void MainWindow::updatePlaybackState(QMediaPlayer::PlaybackState state)
         // Обновляем заголовок окна с названием трека
         QString fileName = getFileNameWithoutExtension(audioPlayer->currentSource().toLocalFile());
         if (!fileName.isEmpty()) {
-            setWindowTitle(fileName + " - Аудиоплеер");
+
         }
     } else {
         ui->pushButton->setText("▶");
@@ -211,6 +216,40 @@ void MainWindow::updateMediaInfo()
     }
 }
 
+
+void MainWindow::updateTrackCover(const QPixmap &cover)
+{
+    if(!cover.isNull()){
+        QPixmap scaledCover = cover.scaled(ui-> trackPic->size(),
+                                           Qt::KeepAspectRatio,
+                                           Qt::SmoothTransformation);
+        ui->trackPic->setPixmap(scaledCover);
+        ui->trackPic->setAlignment(Qt::AlignCenter);
+        qDebug() << "Обложка установлена, размер:" << scaledCover.size();
+    } else {
+        showDefaultCover();
+        qDebug() << "Обложка не найдена";
+    }
+}
+
+void MainWindow::showDefaultCover(){
+    QString picturePath = "C:/AudioPlayerQt/AudioPlayerQt/pictures/not_found.jpg";
+
+    if(!QFile::exists(picturePath))
+    {
+        qDebug() << "файл не найден";
+    }
+    QPixmap defCover(picturePath);
+    QPixmap scaledCover = defCover.scaled(ui->trackPic->size(),
+                                              Qt::KeepAspectRatio,
+                                              Qt::SmoothTransformation);
+
+    ui->trackPic->setPixmap(scaledCover);
+    ui->trackPic->setAlignment(Qt::AlignCenter);
+
+
+}
+
 QString MainWindow::formatTime(qint64 milliseconds)
 {
     qint64 totalSeconds = milliseconds / 1000;
@@ -221,6 +260,8 @@ QString MainWindow::formatTime(qint64 milliseconds)
         .arg(minutes, 2, 10, QChar('0'))
         .arg(seconds, 2, 10, QChar('0'));
 }
+
+
 
 QString MainWindow::getFileNameWithoutExtension(const QString &filePath)
 {

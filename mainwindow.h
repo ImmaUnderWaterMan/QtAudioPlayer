@@ -34,6 +34,9 @@ private slots:
     void updatePlaybackState(QMediaPlayer::PlaybackState state);
     void updateVolume(int volume);
     void updateMediaInfo();
+
+    void updateTrackCover(const QPixmap &cover);
+    void showDefaultCover();
 private:
     Ui::MainWindow *ui;
     QFileSystemModel *fileModel;
